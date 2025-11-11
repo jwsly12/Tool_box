@@ -2,7 +2,7 @@
 
 # ========================================
 # Reconhecimento de Ambiente Linux
-# Funciona em sistemas minimalistas
+# Funcional para sistemas minimalistas
 # ========================================
 
 # Banner
