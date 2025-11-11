@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 
-#Shell Script para reconhecimento em ambientes linux
+# ========================================
+# Reconhecimento de Ambiente Linux
+# Funciona em sistemas minimalistas
+# ========================================
+
+# Banner
 cat <<'EOF'
  _     _                    ____                      
 | |   (_)_ __  _   ___  __ |  _ \ ___  ___ ___  _ __  
@@ -11,23 +16,89 @@ EOF
 
 echo -e "\nby: jwsly12\n"
 
-echo -e "Ambient: $(uname -a )" 
+# Informações do Sistema
+echo -e "=== System Information ==="
+uname -a
+echo -e "==========================\n"
 
-echo -e "\n=== Environment Variables ===\n"
+# Variáveis de Ambiente
+echo -e "=== Environment Variables ==="
 env
-echo -e "================================\n"
+echo -e "\n=== IPs found in Environment ==="
+env | grep -Eo '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b'
+echo -e "===============================\n"
 
-#Lista de binários importantes para a exploração 
-echo -e "\nImportant Tools of Exploitation\n"
-bin_list=("curl" "python" "python3" "python3.8" "netstat")
-
-for i in "${bin_list[@]}"; do
-    cmd_=$(which "$i" 2>/dev/null)
-    if [ -n "$cmd_" ]; then 
-       echo "-> $i : $cmd_"
+# Verificação de binários importantes
+echo -e "=== Important Tools for Exploitation ==="
+bins=("curl" "python" "python3" "netstat" "mysql")
+for cmd in "${bins[@]}"; do
+    if command -v "$cmd" >/dev/null 2>&1; then
+        echo "$cmd : $(command -v $cmd)"
     else
-       echo "$i Not found"
+        echo "$cmd : Not found"
     fi
 done
+echo -e "========================================\n"
 
-#
+# Funções para converter hex -> IP e port
+hex2ip() {
+    ip=$1
+    echo "$((0x${ip:6:2})).$((0x${ip:4:2})).$((0x${ip:2:2})).$((0x${ip:0:2}))"
+}
+
+hex2port() {
+    echo $((0x$1))
+}
+
+state_name() {
+    case $1 in
+        01) echo ESTABLISHED ;;
+        02) echo SYN_SENT ;;
+        03) echo SYN_RECV ;;
+        04) echo FIN_WAIT1 ;;
+        05) echo FIN_WAIT2 ;;
+        06) echo TIME_WAIT ;;
+        07) echo CLOSE ;;
+        08) echo CLOSE_WAIT ;;
+        09) echo LAST_ACK ;;
+        0A) echo LISTEN ;;
+        0B) echo CLOSING ;;
+        *)  echo UNKNOWN ;;
+    esac
+}
+
+parse_proc_net() {
+    proto=$1
+    file=$2
+    echo -e "\n=== $proto Connections ==="
+    tail -n +2 "$file" | while read -r line; do
+        set -- $line
+        local_hex=$(echo $2 | cut -d: -f1)
+        local_port_hex=$(echo $2 | cut -d: -f2)
+        remote_hex=$(echo $3 | cut -d: -f1)
+        remote_port_hex=$(echo $3 | cut -d: -f2)
+        state=$4
+
+        local_ip=$(hex2ip "$local_hex")
+        local_port=$(hex2port "$local_port_hex")
+        remote_ip=$(hex2ip "$remote_hex")
+        remote_port=$(hex2port "$remote_port_hex")
+
+        if [ "$proto" = "TCP" ]; then
+            state_txt=$(state_name "$state")
+        else
+            state_txt="-"
+        fi
+
+        echo "$proto: Local $local_ip:$local_port  Remote $remote_ip:$remote_port  State $state_txt"
+    done
+}
+
+# Listando conexões TCP e UDP
+[ -f /proc/net/tcp ] && parse_proc_net TCP /proc/net/tcp
+[ -f /proc/net/udp ] && parse_proc_net UDP /proc/net/udp
+
+# Usuários com shell
+echo -e "\n=== Users with /bin/bash ==="
+grep "/bin/bash" /etc/passwd || echo "No users with /bin/bash found"
+echo -e "==============================\n"
