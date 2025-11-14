@@ -141,7 +141,5 @@ echo -e "\n=== Important Terms ==="
 
 terms=("password" "user" "database" "secret" "token" "auth" "host" "server" "port")
 
-
-
 echo -e "==============================\n"
 
