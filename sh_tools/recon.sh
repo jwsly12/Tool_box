@@ -2,10 +2,9 @@
 
 # ========================================
 # Reconhecimento de Ambiente Linux
-# Funcional para sistemas minimalistas
+# Funciona em sistemas minimalistas
 # ========================================
 
-# Banner
 cat <<'EOF'
  _     _                    ____                      
 | |   (_)_ __  _   ___  __ |  _ \ ___  ___ ___  _ __  
@@ -31,6 +30,7 @@ echo -e "===============================\n"
 # Verificação de binários importantes
 echo -e "=== Important Tools for Exploitation ==="
 bins=("curl" "python" "python3" "netstat" "mysql")
+
 for cmd in "${bins[@]}"; do
     if command -v "$cmd" >/dev/null 2>&1; then
         echo "$cmd : $(command -v $cmd)"
@@ -42,6 +42,17 @@ echo -e "========================================\n"
 
 # Funções para converter hex -> IP e port
 hex2ip() {
+
+# Operação: echo "$((0xA))" == 10 
+# Conversão usando apenas o bash de HEX para TEXT
+# ${variavel:offset:comprimento} (Começando sempre em 0)
+
+# Posição:   0 1 2 3 4 5 6 7
+# Caracter:  0 1 0 0 0 0 7 F
+
+#${variavel:6:2} --> pega posição 6 e 7 --> 7F
+
+
     ip=$1
     echo "$((0x${ip:6:2})).$((0x${ip:4:2})).$((0x${ip:2:2})).$((0x${ip:0:2}))"
 }
@@ -51,6 +62,24 @@ hex2port() {
 }
 
 state_name() {
+
+: <<'COMMENT'
+
+01	ESTABLISHED	Conexão ativa e estabelecida
+02	SYN_SENT	Pacote SYN enviado, aguardando resposta
+03	SYN_RECV	Pacote SYN recebido, esperando confirmação
+04	FIN_WAIT1	Conexão iniciando fechamento (primeiro FIN enviado)
+05	FIN_WAIT2	Aguardando FIN do outro lado
+06	TIME_WAIT	Conexão encerrada, esperando tempo de segurança
+07	CLOSE	    Conexão fechada
+08	CLOSE_WAIT	Recebeu FIN, aguardando fechamento pelo local
+09	LAST_ACK	Último ACK enviado antes de fechar a conexão
+0A	LISTEN	    Porta aberta aguardando conexões
+0B	CLOSING	    Ambos lados enviaram FIN, aguardando ACK final
+*	UNKNOWN  	Qualquer código que não esteja listado
+
+COMMENT
+
     case $1 in
         01) echo ESTABLISHED ;;
         02) echo SYN_SENT ;;
@@ -102,3 +131,17 @@ parse_proc_net() {
 echo -e "\n=== Users with /bin/bash ==="
 grep "/bin/bash" /etc/passwd || echo "No users with /bin/bash found"
 echo -e "==============================\n"
+
+#Senhas, Usuários e termos importantes dentro de arquivos
+# find / -type f -name "*" -exec grep -H -e "$termos" {} \; 2>/dev/null 
+# É importante colocar de backrground essa operação e salvar ela em um arquivo, pois pode demorar.
+# Printar uma messagem se o comando tiver dado certo (Use o operador &&)
+ 
+echo -e "\n=== Important Terms ==="
+
+terms=("password" "user" "database" "secret" "token" "auth" "host" "server" "port")
+
+
+
+echo -e "==============================\n"
+
