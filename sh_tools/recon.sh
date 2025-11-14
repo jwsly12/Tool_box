@@ -29,7 +29,7 @@ echo -e "===============================\n"
 
 # Verificação de binários importantes
 echo -e "=== Important Tools for Exploitation ==="
-bins=("curl" "python" "python3" "netstat" "mysql")
+bins=("curl" "python" "python3" "netstat" "mysql" "php")
 
 for cmd in "${bins[@]}"; do
     if command -v "$cmd" >/dev/null 2>&1; then
