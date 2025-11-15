@@ -133,13 +133,14 @@ grep "/bin/bash" /etc/passwd || echo "No users with /bin/bash found"
 echo -e "==============================\n"
 
 #Senhas, Usuários e termos importantes dentro de arquivos
-# find / -type f -name "*" -exec grep -H -e "$termos" {} \; 2>/dev/null 
-# É importante colocar de backrground essa operação e salvar ela em um arquivo, pois pode demorar.
-# Printar uma messagem se o comando tiver dado certo (Use o operador &&)
  
 echo -e "\n=== Important Terms ==="
 
 terms=("password" "user" "database" "secret" "token" "auth" "host" "server" "port")
+
+for i in "${terms[@]}";do
+    find / -type f -name "*" -exec grep -H "$i" {} \; 2>/dev/null > recon_terms.txt && echo "Scan finished !"
+done 
 
 echo -e "==============================\n"
 
