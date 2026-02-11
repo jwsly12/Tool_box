@@ -153,7 +153,7 @@ echo -e "\nGroups of the current user: `groups $USER`"
 echo -e "\n===Docker enumeration==="
 
 echo -e "\n===Mail Files==="
-ls * /var/mail
+ls /var/mail
 
 #1 Rede --> Possibilidade de achar o host real da aplicação
 
