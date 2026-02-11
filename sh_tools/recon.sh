@@ -133,7 +133,7 @@ grep "/bin/bash" /etc/passwd || echo "No users with /bin/bash found"
 echo -e "==============================\n"
 
 #Senhas, Usuários e termos importantes dentro de arquivos
- 
+
 echo -e "\n=== Important Terms ==="
 
 echo -e "Saved in File recon_terms.txt"
@@ -141,10 +141,19 @@ echo -e "Saved in File recon_terms.txt"
 terms=("password" "user" "database" "secret" "token" "auth" "host" "server" "port")
 
 for i in "${terms[@]}";do
-    find / -type f -name "*" -exec grep -H "$i" {} \; 2>/dev/null > recon_terms.txt && echo "Scan finished !" &
+    find / -type f -name "*" -exec grep -H "$i" {} \; 2>/dev/null > recon_terms.txt &
 done
 
-
+#Grupos de usuários
 echo -e "\n=== Groups  ==="
+groups
+echo -e "\nGroups of the current user: `groups $USER`"
 
+#Enumeração de Dockers
+echo -e "\n===Docker enumeration==="
+
+echo -e "\n===Mail Files==="
+ls * /var/mail
+
+#1 Rede --> Possibilidade de achar o host real da aplicação
 
