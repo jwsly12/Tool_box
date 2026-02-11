@@ -29,7 +29,7 @@ echo -e "===============================\n"
 
 # Verificação de binários importantes
 echo -e "=== Important Tools for Exploitation ==="
-bins=("curl" "python" "python3" "netstat" "mysql" "php")
+bins=("curl" "python" "python3" "netstat" "mysql" "php" "ldd")
 
 for cmd in "${bins[@]}"; do
     if command -v "$cmd" >/dev/null 2>&1; then
@@ -154,6 +154,60 @@ echo -e "\n===Docker enumeration==="
 
 echo -e "\n===Mail Files==="
 ls /var/mail
+
+echo -e "\n=== Binaries Analysis ==="
+
+# 1. Kernel Interaction
+echo -e "\n[+] Kernel Interaction Check (Mount Operations Only)"
+SEARCH_DIR="/bin"
+
+for bin in "$SEARCH_DIR"/*; do
+    if [ -f "$bin" ] && [ -r "$bin" ]; then
+        if command -v objdump >/dev/null; then
+            RESULT=$(objdump -T "$bin" 2>/dev/null | grep -iE '[[:space:]]u?mount$')
+        else
+            RESULT=$(strings "$bin" 2>/dev/null | grep -xE 'mount|umount')
+        fi
+
+        if [ ! -z "$RESULT" ]; then
+            echo -e "--- Target: $bin ---"
+        fi
+    fi
+done
+
+
+# 2. SUID/GUID 
+echo -e "\n[+] SUID/GUID Files (Common paths)"
+find /bin /sbin /usr/bin /usr/sbin -type f \( -perm -4000 -o -perm -2000 \) -ls 2>/dev/null
+
+# 3. Capabilities
+echo -e "\n[+] Capabilities"
+if command -v getcap >/dev/null; then
+    getcap /usr/bin/* 2>/dev/null
+else
+    echo "getcap not found. Skipping or use getfattr."
+fi
+
+#D-Bus Interaction
+echo -e "\n[+] D-Bus Interaction"
+
+check_dbus() {
+    local search_path="${1:-/bin}"
+    local has_ldd=false
+    command -v ldd >/dev/null 2>&1 && has_ldd=true
+
+    for bin in "$search_path"/*; do
+        [ -f "$bin" ] || continue
+        if [ "$has_ldd" = true ]; then
+            ldd "$bin" 2>/dev/null | grep -qiE 'dbus|gio' && echo "Found (ldd): $bin"
+        else
+            strings "$bin" 2>/dev/null | grep -qiE 'libdbus|libgio|org\.freedesktop' && echo "Found (strings): $bin"
+        fi
+    done
+}
+
+check_dbus "/bin"
+#check_dbus "/usr/bin"
 
 #1 Rede --> Possibilidade de achar o host real da aplicação
 
