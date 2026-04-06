@@ -29,7 +29,7 @@ echo -e "===============================\n"
 
 # Verificação de binários importantes
 echo -e "=== Important Tools for Exploitation ==="
-bins=("curl" "python" "python3" "netstat" "mysql" "php" "ldd")
+bins=("curl" "python" "python3" "netstat" "mysql" "php" "ldd" "socat" "sg")
 
 for cmd in "${bins[@]}"; do
     if command -v "$cmd" >/dev/null 2>&1; then
@@ -151,6 +151,7 @@ echo -e "\nGroups of the current user: `groups $USER`"
 
 #Enumeração de Dockers
 echo -e "\n===Docker enumeration==="
+find / \( -name "docker.sock" -o -name "podman.sock" -o -name "daemon.json" -o -name "docker.service" -o -name "key.json" \) -ls 2>/dev/null
 
 echo -e "\n===Mail Files==="
 ls /var/mail
@@ -211,3 +212,10 @@ check_dbus "/bin"
 
 #1 Rede --> Possibilidade de achar o host real da aplicação
 
+#Word Writable
+echo -e "\n=== Word Write ==="
+find / -type f -perm -o+w -ls \
+  -not -path "/proc/*" \
+  -not -path "/sys/*" \
+  -not -path "/dev/*" \
+  2>/dev/null
